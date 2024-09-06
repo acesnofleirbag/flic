@@ -2,10 +2,16 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"flic/guard"
 	"fmt"
 	"io"
 	"os"
+)
+
+var (
+    path string
+    recursive bool
 )
 
 func Process(path string) {
@@ -13,6 +19,10 @@ func Process(path string) {
     guard.Err(err)
 
     for _, item := range files {
+        if item.IsDir() && !recursive {
+            continue
+        }
+
         if item.IsDir() {
             Process(path + item.Name() + "/")
             continue
@@ -43,14 +53,10 @@ func Process(path string) {
 }
 
 func main() {
-    args := os.Args
+    flag.StringVar(&path, "path", ".", "path to execute line counting")
+    flag.BoolVar(&recursive, "recursive", true, "recursive line counting")
 
-    if len(args) != 2 {
-        fmt.Println("Usage: flic -path=<path> | sort -n > /tmp/flic.out")
-        os.Exit(0)
-    }
-
-    path := args[1]
+    flag.Parse()
 
     Process(path)
 }
